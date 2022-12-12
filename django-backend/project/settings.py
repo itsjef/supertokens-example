@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
-import os
+# from typing import Dict, Union, Any, List
+from typing import List
 
 from dotenv import load_dotenv
-from typing import List
 from corsheaders.defaults import default_headers
 from supertokens_python import (
     InputAppInfo,
@@ -22,14 +22,11 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
-from supertokens_python.recipe import session, thirdpartyemailpassword
-from supertokens_python.recipe.thirdpartyemailpassword import (
-    Apple,
-    Discord,
-    Github,
-    Google,
-    GoogleWorkspaces,
-)
+from supertokens_python.recipe import emailpassword, session
+# from supertokens_python.framework.request import BaseRequest
+# from supertokens_python.recipe.session.interfaces import RecipeInterface, SessionContainer
+# from supertokens_python.recipe.userroles.asyncio import get_roles_for_user
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,62 +48,44 @@ def get_website_domain():
     return "http://localhost:" + get_website_port()
 
 
+# def session_functions_override(oi: RecipeInterface) -> RecipeInterface:
+#     oi_create_new_session = oi.create_new_session
+
+#     async def create_new_sesion(
+#         request: BaseRequest,
+#         user_id: str,
+#         access_token_payload: Union[None, Dict[str, Any]],
+#         session_data: Union[None, Dict[str, Any]],
+#         user_context: Dict[str, Any]
+#     ) -> SessionContainer:
+#         roles = (await get_roles_for_user(user_id, user_context)).roles
+#         if access_token_payload is None:
+#             access_token_payload = {}
+#             access_token_payload["roles"] = roles
+#         return await oi_create_new_session(
+#             request, user_id, access_token_payload, session_data, user_context
+#         )
+#     oi.create_new_session = create_new_sesion
+#     return oi
+
+
 init(
     supertokens_config=SupertokensConfig(connection_uri="http://localhost:3567"),
     app_info=InputAppInfo(
         app_name="Supertokens",
         api_domain="http://localhost:" + get_api_port(),
         website_domain=get_website_domain(),
+        api_base_path="/auth",
+        website_base_path="/"
     ),
     framework="django",
     mode="wsgi",
     recipe_list=[
+        # session.init(
+        #     override=session.InputOverrideConfig(functions=session_functions_override)
+        # ),
         session.init(),
-        thirdpartyemailpassword.init(
-            providers=[
-                Google(
-                    is_default=True,
-                    client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
-                ),
-                Google(
-                    client_id=os.environ.get("GOOGLE_CLIENT_ID_MOBILE"),  # type: ignore
-                    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET_MOBILE"),  # type: ignore
-                ),
-                Github(
-                    is_default=True,
-                    client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
-                ),
-                Github(
-                    client_id=os.environ.get("GITHUB_CLIENT_ID_MOBILE"),  # type: ignore
-                    client_secret=os.environ.get("GITHUB_CLIENT_SECRET_MOBILE"),  # type: ignore
-                ),
-                # Apple(
-                #     is_default=True,
-                #     client_id=os.environ.get("APPLE_CLIENT_ID"),  # type: ignore
-                #     client_key_id=os.environ.get("APPLE_KEY_ID"),  # type: ignore
-                #     client_team_id=os.environ.get("APPLE_TEAM_ID"),  # type: ignore
-                #     client_private_key=os.environ.get("APPLE_PRIVATE_KEY"),  # type: ignore
-                # ),
-                # Apple(
-                #     client_id=os.environ.get("APPLE_CLIENT_ID_MOBILE"),  # type: ignore
-                #     client_key_id=os.environ.get("APPLE_KEY_ID"),  # type: ignore
-                #     client_team_id=os.environ.get("APPLE_TEAM_ID"),  # type: ignore
-                #     client_private_key=os.environ.get("APPLE_PRIVATE_KEY"),  # type: ignore
-                # ),
-                GoogleWorkspaces(
-                    is_default=True,
-                    client_id=os.environ.get("GOOGLE_WORKSPACES_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("GOOGLE_WORKSPACES_CLIENT_SECRET"),  # type: ignore
-                ),
-                Discord(
-                    is_default=True,
-                    client_id=os.environ.get("DISCORD_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("DISCORD_CLIENT_SECRET"),  # type: ignore
-                ),
-            ]
-        ),
+        emailpassword.init()
     ],
     telemetry=False,
 )
