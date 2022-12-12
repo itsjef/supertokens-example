@@ -1,12 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import SuperTokens, { SuperTokensWrapper, getSuperTokensRoutesForReactRouterDom } from "supertokens-auth-react";
-import ThirdPartyEmailPassword, {
-    ThirdPartyEmailPasswordAuth,
-    Google,
-    Github,
-    Apple,
-} from "supertokens-auth-react/recipe/thirdpartyemailpassword";
+import EmailPassword from "supertokens-auth-react/recipe/emailpassword";
 import Session from "supertokens-auth-react/recipe/session";
 import Home from "./Home";
 import { Routes, BrowserRouter as Router, Route } from "react-router-dom";
@@ -30,16 +25,11 @@ SuperTokens.init({
         appName: "SuperTokens Demo App", // TODO: Your app name
         apiDomain: getApiDomain(), // TODO: Change to your app's API domain
         websiteDomain: getWebsiteDomain(), // TODO: Change to your app's website domain
+        apiBasePath: "/auth",
+        websiteBasePath: "/",
     },
     recipeList: [
-        ThirdPartyEmailPassword.init({
-            signInAndUpFeature: {
-                providers: [Github.init(), Google.init(), Apple.init()],
-            },
-            emailVerificationFeature: {
-                mode: "REQUIRED",
-            },
-        }),
+        EmailPassword.init(),
         Session.init(),
     ],
 });
@@ -55,22 +45,7 @@ function App() {
                         <Routes>
                             {/* This shows the login UI on "/auth" route */}
                             {getSuperTokensRoutesForReactRouterDom(require("react-router-dom"))}
-
-                            <Route
-                                path="/"
-                                element={
-                                    /* This protects the "/" route so that it shows
-                                        <Home /> only if the user is logged in.
-                                        Else it redirects the user to "/auth" */
-                                    <ThirdPartyEmailPasswordAuth
-                                        onSessionExpired={() => {
-                                            updateShowSessionExpiredPopup(true);
-                                        }}>
-                                        <Home />
-                                        {showSessionExpiredPopup && <SessionExpiredPopup />}
-                                    </ThirdPartyEmailPasswordAuth>
-                                }
-                            />
+                            {/*Your app routes*/}
                         </Routes>
                     </div>
                     <Footer />
