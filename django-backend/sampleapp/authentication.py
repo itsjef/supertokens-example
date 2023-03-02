@@ -15,9 +15,10 @@ class SupertokensAuthentication(SessionAuthentication):
 
         try:
             user = STUser.objects.get(pk=user_id)
-
-            self.enforce_csrf(request)
-
-            return (user, None)
         except STUser.DoesNotExist:
-            return None
+            user = STUser(pk=user_id, display_name="")
+            user.save()
+
+        self.enforce_csrf(request)
+
+        return (user, None)
